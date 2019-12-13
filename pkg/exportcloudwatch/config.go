@@ -51,18 +51,6 @@ type ExportConfig struct {
 	collectors []*prometheus.GaugeVec
 }
 
-// TagSelect defines the configuration for tag selection on metrics
-type TagSelect struct {
-	TagSelections         TagSelections `json:"tag_selections"`
-	ResourceTypeSelection string        `json:"resource_type_selection"`
-	ResourceIDDimension   string        `json:"resource_id_dimension"`
-}
-
-// TagSelections ...
-type TagSelections struct {
-	Tags map[string]string `json:"tags"`
-}
-
 func (e *ExportConfig) isDynamodDBIndexMetric() bool {
 	if e.Namespace != "AWS/DynamoDB" {
 		return false
