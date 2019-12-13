@@ -8,13 +8,13 @@ import (
 )
 
 type exportConfig struct {
-	Namespace         string                     `json:"namespace"`
-	Name              string                     `json:"name"`
-	Dimensions        []string                   `json:"dimensions"`
-	Statistics        []string                   `json:"statistics"`
-	TagSelect         exportcloudwatch.TagSelect `json:"tag_select"`
-	DimensionsMatch   map[string]string          `json:"dimensionsMatch"`
-	DimensionsNoMatch map[string]string          `json:"dimensionsNoMatch"`
+	Namespace         string                 `json:"namespace"`
+	Name              string                 `json:"name"`
+	Dimensions        []string               `json:"dimensions"`
+	Statistics        []string               `json:"statistics"`
+	TagSelect         map[string]interface{} `json:"tag_select"`
+	DimensionsMatch   map[string]string      `json:"dimensionsMatch"`
+	DimensionsNoMatch map[string]string      `json:"dimensionsNoMatch"`
 	StatDefault       string
 }
 
@@ -42,8 +42,8 @@ func (c *configuration) Validate() error {
 
 		// If tag_select.tag_selections.tags has a length then we need to verify that the required
 		// fields are present
-		if len(raw.TagSelect.TagSelections.Tags) > 0 {
-			if len(raw.TagSelect.ResourceTypeSelection) < 1 || len(raw.TagSelect.ResourceIDDimension) < 1 {
+		if len(raw.TagSelect) > 0 {
+			if raw.TagSelect["resource_type_selection"] == nil || raw.TagSelect["resource_id_dimension"] == nil {
 				return errors.New("resource_type_selection and resource_id_dimension are required with tag_select")
 			}
 		}

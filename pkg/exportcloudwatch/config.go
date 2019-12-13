@@ -38,7 +38,7 @@ type ExportConfig struct {
 
 	// TagSelect is tag configuration to filter on, based on mapping from the
 	// tagged resource ID to a CloudWatch dimension.
-	TagSelect TagSelect
+	TagSelect map[string]interface{}
 
 	// Both of these filter the metrics based on the values of the dimension
 	DimensionsMatch   map[string]*regexp.Regexp
@@ -53,11 +53,14 @@ type ExportConfig struct {
 
 // TagSelect defines the configuration for tag selection on metrics
 type TagSelect struct {
-	TagSelections struct {
-		Tags map[string]string
-	} `json:"tag_selections"`
-	ResourceTypeSelection string `json:"resource_type_selection"`
-	ResourceIDDimension   string `json:"resource_id_dimension"`
+	TagSelections         TagSelections `json:"tag_selections"`
+	ResourceTypeSelection string        `json:"resource_type_selection"`
+	ResourceIDDimension   string        `json:"resource_id_dimension"`
+}
+
+// TagSelections ...
+type TagSelections struct {
+	Tags map[string]string `json:"tags"`
 }
 
 func (e *ExportConfig) isDynamodDBIndexMetric() bool {
