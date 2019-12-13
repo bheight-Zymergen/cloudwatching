@@ -28,20 +28,36 @@ const (
 // you call Validate.
 type ExportConfig struct {
 	// Namespace and Name map directly to metrics in AWS Cloudwatch
-	Namespace, Name string
+	Namespace string
+	Name      string
 
 	// Dimensions are the names of dimensions to pull the data of, and Statistics
 	// are the Statistics to pull
-	Dimensions, Statistics []string
+	Dimensions []string
+	Statistics []string
+
+	// TagSelect is tag configuration to filter on, based on mapping from the
+	// tagged resource ID to a CloudWatch dimension.
+	TagSelect TagSelect
 
 	// Both of these filter the metrics based on the values of the dimension
-	DimensionsMatch, DimensionsNoMatch map[string]*regexp.Regexp
+	DimensionsMatch   map[string]*regexp.Regexp
+	DimensionsNoMatch map[string]*regexp.Regexp
 
 	// StatDefault determines the default value for a stat if no value is read
 	StatDefault StatDefaultType
 
 	// each collector maps to the statistic in the same location
 	collectors []*prometheus.GaugeVec
+}
+
+// TagSelect defines the configuration for tag selection on metrics
+type TagSelect struct {
+	TagSelections struct {
+		Tags map[string]string
+	} `json:"tag_selections"`
+	ResourceTypeSelection string `json:"resource_type_selection"`
+	ResourceIDDimension   string `json:"resource_id_dimension"`
 }
 
 func (e *ExportConfig) isDynamodDBIndexMetric() bool {

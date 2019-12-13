@@ -8,13 +8,14 @@ import (
 )
 
 type exportConfig struct {
-	Namespace, Name string
-
-	Dimensions, Statistics []string
-
-	DimensionsMatch, DimensionsNoMatch map[string]string
-
-	StatDefault string
+	Namespace         string                     `json:"namespace"`
+	Name              string                     `json:"name"`
+	Dimensions        []string                   `json:"dimensions"`
+	Statistics        []string                   `json:"statistics"`
+	TagSelect         exportcloudwatch.TagSelect `json:"tag_select"`
+	DimensionsMatch   map[string]string          `json:"dimensionsMatch"`
+	DimensionsNoMatch map[string]string          `json:"dimensionsNoMatch"`
+	StatDefault       string
 }
 
 type configuration struct {
@@ -34,8 +35,17 @@ func (c *configuration) Validate() error {
 			Name:              raw.Name,
 			Dimensions:        raw.Dimensions,
 			Statistics:        raw.Statistics,
+			TagSelect:         raw.TagSelect,
 			DimensionsMatch:   make(map[string]*regexp.Regexp, len(raw.DimensionsMatch)),
 			DimensionsNoMatch: make(map[string]*regexp.Regexp, len(raw.DimensionsNoMatch)),
+		}
+
+		// If tag_select.tag_selections.tags has a length then we need to verify that the required
+		// fields are present
+		if len(raw.TagSelect.TagSelections.Tags) > 0 {
+			if len(raw.TagSelect.ResourceTypeSelection) < 1 || len(raw.TagSelect.ResourceIDDimension) < 1 {
+				return errors.New("resource_type_selection and resource_id_dimension are required with tag_select")
+			}
 		}
 
 		if raw.StatDefault == "Prior" {

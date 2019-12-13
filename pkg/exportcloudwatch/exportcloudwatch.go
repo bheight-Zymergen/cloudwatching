@@ -10,7 +10,6 @@ package exportcloudwatch
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"sort"
 	"time"
@@ -19,6 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
+	log "github.com/sirupsen/logrus"
 )
 
 var cloudwatchGetMetricDataMessagesCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
@@ -35,6 +35,7 @@ type MetricStat struct {
 	statDefault      StatDefaultType
 }
 
+// Call GetMetricData and set gauge values
 func getMetricData(cw *cloudwatch.CloudWatch, start, end time.Time, mdq []*cloudwatch.MetricDataQuery, unrolled map[string]MetricStat) error {
 	gmdi := &cloudwatch.GetMetricDataInput{
 		StartTime: aws.Time(start),
@@ -51,13 +52,14 @@ func getMetricData(cw *cloudwatch.CloudWatch, start, end time.Time, mdq []*cloud
 		}
 		if len(gmdo.Messages) != 0 {
 			for _, m := range gmdo.Messages {
-				log.Print("Got messages from cloudwatcn.GetMetricData", "code", *m.Code, "value", *m.Value)
+				log.Print("Got messages from cloudwatch.GetMetricData", "code", *m.Code, "value", *m.Value)
 				cloudwatchGetMetricDataMessagesCounter.With(prometheus.Labels{"code": *m.Code}).Inc()
 			}
 		}
 
 		for _, v := range gmdo.MetricDataResults {
 			if len(v.Values) != 0 {
+				// Set the gauge value for this metric
 				unrolled[*v.Id].gauge.Set(*v.Values[0])
 			}
 		}
@@ -150,6 +152,7 @@ func metricsToRead(ec []ExportConfig, cw *cloudwatch.CloudWatch) ([]MetricStat, 
 			}
 
 			for _, metric := range lmo.Metrics {
+
 				if !includeMetric(exportConfig, metric) {
 					continue
 				}
@@ -168,6 +171,7 @@ func metricsToRead(ec []ExportConfig, cw *cloudwatch.CloudWatch) ([]MetricStat, 
 						statDefault:      exportConfig.StatDefault,
 					})
 				}
+
 			}
 
 			if lmo.NextToken != nil {
