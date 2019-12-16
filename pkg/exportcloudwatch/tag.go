@@ -24,7 +24,8 @@ type TagsData struct {
 	Tags      []*Tag
 }
 
-// Get takes a job and returns a slice of `Tag` and any errors found
+// getTagsInNamespace takes a namespace and a region. Using the namespace to design
+// a filter and returning a slice of TagsData and any errors
 func getTagsInNamespace(namespace string, region string) ([]*TagsData, error) {
 
 	var wg sync.WaitGroup
